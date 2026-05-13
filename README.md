@@ -4,7 +4,15 @@ A multi-tenant SaaS Inventory Management System built with modern web technologi
 
 ![StockFlow](https://img.shields.io/badge/StockFlow-Inventory_Management-000000?style=for-the-badge)
 
-## Tech Stack
+## 🚀 Live Demo
+
+**Url:** [https://saa-s-inventory-management-system-two.vercel.app/login](https://saa-s-inventory-management-system-two.vercel.app/login)
+
+### 🔑 Demo Credentials
+- **Email:** `admin@nexus.com`
+- **Password:** `password123`
+
+---
 
 ### Frontend
 - **React 19** + **Vite** — Lightning-fast build tooling
