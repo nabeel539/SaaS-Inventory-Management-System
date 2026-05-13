@@ -9,10 +9,7 @@ import { SettingsSkeleton } from "../components/Skeletons";
 import type { Organization } from "../types";
 
 const settingsSchema = z.object({
-  defaultLowStockThreshold: z.coerce
-    .number()
-    .int()
-    .min(0, "Threshold must be 0 or more"),
+  defaultLowStockThreshold: z.number({ invalid_type_error: "Threshold must be a number" }).int().min(0, "Threshold must be 0 or more"),
 });
 
 type SettingsForm = z.infer<typeof settingsSchema>;
