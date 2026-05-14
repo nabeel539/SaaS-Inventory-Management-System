@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { AlertCircle, Package, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { dashboardService } from "../services/dashboard.service";
-import { DashboardStatsSkeleton } from "../components/Skeletons";
+import { DashboardStatsSkeleton, LowStockSkeleton } from "../components/Skeletons";
 import type { DashboardStats } from "../types";
 
 const DashboardPage = () => {
@@ -36,17 +36,7 @@ const DashboardPage = () => {
           <div className="h-8 w-64 bg-surface-container-highest rounded animate-pulse"></div>
         </div>
         <DashboardStatsSkeleton />
-        <div className="card animate-pulse">
-          <div className="h-6 w-48 bg-surface-container-highest rounded mb-4"></div>
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <div
-                key={idx}
-                className="h-10 bg-surface-container-highest rounded"
-              ></div>
-            ))}
-          </div>
-        </div>
+        <LowStockSkeleton rows={5} />
       </div>
     );
   }
@@ -144,7 +134,8 @@ const DashboardPage = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-surface-container-highest">
@@ -181,11 +172,10 @@ const DashboardPage = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block px-2 py-1 rounded text-[11px] font-semibold label-caps ${
-                            item.status === "OUT_OF_STOCK"
-                              ? "bg-destructive/10 text-destructive"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
+                          className={`inline-block px-2 py-1 rounded text-[11px] font-semibold label-caps ${item.status === "OUT_OF_STOCK"
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-yellow-100 text-yellow-800"
+                            }`}
                         >
                           {item.status === "OUT_OF_STOCK"
                             ? "Out of Stock"
@@ -198,53 +188,93 @@ const DashboardPage = () => {
               </table>
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-surface-container-highest">
-                <p className="text-body-sm text-muted-foreground">
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(
-                    currentPage * itemsPerPage,
-                    stats.lowStockItems.length,
-                  )}{" "}
-                  of {stats.lowStockItems.length}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 border border-surface-container-highest rounded text-body-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low transition-colors"
-                  >
-                    ← Previous
-                  </button>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-1 rounded text-body-sm transition-colors ${
-                          currentPage === page
-                            ? "bg-[#1b1b1b] text-white"
-                            : "border border-surface-container-highest hover:bg-surface-container-low"
+            {/* Mobile Card View */}
+            <div className="sm:hidden space-y-3">
+              {paginatedItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 rounded-lg border border-surface-container-low space-y-3"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-body font-medium">{item.name}</p>
+                      <p className="text-body-sm text-muted-foreground">
+                        {item.sku}
+                      </p>
+                    </div>
+                    <span
+                      className={`inline-block px-2 py-1 rounded text-[10px] font-semibold label-caps ${item.status === "OUT_OF_STOCK"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-yellow-100 text-yellow-800"
                         }`}
-                      >
-                        {page}
-                      </button>
-                    ),
-                  )}
-                  <button
-                    onClick={() =>
-                      setCurrentPage(Math.min(totalPages, currentPage + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1 border border-surface-container-highest rounded text-body-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low transition-colors"
-                  >
-                    Next →
-                  </button>
+                    >
+                      {item.status === "OUT_OF_STOCK" ? "Out" : "Low"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-body-sm">
+                    <p className="text-muted-foreground">
+                      Stock: <span className="text-[#1b1b1b] font-medium">{item.quantity}</span>
+                    </p>
+                    <p className="text-muted-foreground">
+                      Threshold: <span className="text-[#1b1b1b] font-medium">{item.threshold}</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between mt-4 pt-4 border-t border-surface-container-highest gap-4">
+            <p className="text-body-sm text-muted-foreground order-2 sm:order-1">
+              Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(
+                currentPage * itemsPerPage,
+                stats.lowStockItems.length,
+              )}{" "}
+              of {stats.lowStockItems.length}
+            </p>
+            <div className="flex gap-2 order-1 sm:order-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-surface-container-highest rounded text-body-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low transition-colors"
+              >
+                ← <span className="hidden xs:inline">Previous</span>
+              </button>
+              <div className="hidden xs:flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 rounded text-body-sm transition-colors ${currentPage === page
+                        ? "bg-[#1b1b1b] text-white"
+                        : "border border-surface-container-highest hover:bg-surface-container-low"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ),
+                )}
+              </div>
+              {/* Mobile page indicator */}
+              <div className="flex xs:hidden items-center px-3 text-body-sm font-medium">
+                {currentPage} / {totalPages}
+              </div>
+              <button
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 border border-surface-container-highest rounded text-body-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low transition-colors"
+              >
+                <span className="hidden xs:inline">Next</span> →
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

@@ -89,7 +89,7 @@ const ProductsPage = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-display">Products</h1>
           <p className="text-body text-muted-foreground mt-1">
@@ -98,7 +98,7 @@ const ProductsPage = () => {
         </div>
         <Link
           to="/products/new"
-          className="btn-primary flex items-center gap-2"
+          className="btn-primary flex items-center gap-2 self-start sm:self-auto"
         >
           <Plus size={18} />
           Add Product
@@ -120,12 +120,12 @@ const ProductsPage = () => {
         />
       </div>
 
-      {/* Products Table */}
-      <div className="card p-0 overflow-hidden">
+      {/* Products Table / Cards */}
+      <div className="card p-0 overflow-hidden border-none sm:border sm:bg-white">
         {isLoading ? (
           <ProductTableSkeleton rows={5} />
         ) : products.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
+          <div className="card text-center py-16 text-muted-foreground bg-white">
             <p className="text-body">
               No products found.{" "}
               {search
@@ -135,7 +135,8 @@ const ProductsPage = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto bg-white rounded-xl border border-surface-container-highest">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-surface-container-highest bg-surface-container-lowest">
@@ -196,10 +197,59 @@ const ProductsPage = () => {
               </table>
             </div>
 
+            {/* Mobile Card View */}
+            <div className="sm:hidden space-y-4">
+              {products.map((product) => (
+                <div key={product.id} className="card bg-white shadow-sm">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-body font-semibold text-[#1b1b1b]">
+                        {product.name}
+                      </h3>
+                      <p className="text-body-sm text-muted-foreground">
+                        {product.sku}
+                      </p>
+                    </div>
+                    {getStatusBadge(product)}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 py-3 border-y border-surface-container-low">
+                    <div>
+                      <p className="label-caps text-[10px] mb-1">Quantity</p>
+                      <p className="text-body font-medium">{product.quantity}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="label-caps text-[10px] mb-1">Price</p>
+                      <p className="text-body font-semibold">
+                        ${product.sellingPrice.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
+                    <Link
+                      to={`/products/${product.id}/edit`}
+                      className="flex items-center gap-2 px-4 py-2 border border-surface-container-highest rounded-lg text-body-sm font-medium hover:bg-surface-container-low transition-colors"
+                    >
+                      <Edit size={16} />
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => setDeleteConfirm(product.id)}
+                      className="flex items-center gap-2 px-4 py-2 bg-destructive/10 text-destructive rounded-lg text-body-sm font-medium hover:bg-destructive/20 transition-colors"
+                    >
+                      <Trash2 size={16} />
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 border-t border-surface-container-highest">
-                <p className="text-body-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-surface-container-highest gap-4">
+                <p className="text-body-sm text-muted-foreground order-2 sm:order-1">
                   Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
                   {Math.min(
                     pagination.page * pagination.limit,
@@ -207,43 +257,48 @@ const ProductsPage = () => {
                   )}{" "}
                   of {pagination.total}
                 </p>
-                <div className="flex gap-2">
+                <div className="flex gap-2 order-1 sm:order-2">
                   <button
                     onClick={() => fetchProducts(pagination.page - 1, search)}
                     disabled={pagination.page === 1}
                     className="px-3 py-1 border border-surface-container-highest rounded text-body-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low transition-colors"
                   >
-                    ← Previous
+                    ← <span className="hidden xs:inline">Previous</span>
                   </button>
-                  {Array.from(
-                    { length: Math.min(5, pagination.totalPages) },
-                    (_, i) => {
-                      const page = pagination.page - 2 + i;
-                      if (page > 0 && page <= pagination.totalPages)
-                        return page;
-                      return null;
-                    },
-                  )
-                    .filter(Boolean)
-                    .map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => fetchProducts(page as number, search)}
-                        className={`px-3 py-1 rounded text-body-sm transition-colors ${
-                          pagination.page === page
-                            ? "bg-[#1b1b1b] text-white"
-                            : "border border-surface-container-highest hover:bg-surface-container-low"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                  <div className="hidden xs:flex gap-2">
+                    {Array.from(
+                      { length: Math.min(5, pagination.totalPages) },
+                      (_, i) => {
+                        const page = pagination.page - 2 + i;
+                        if (page > 0 && page <= pagination.totalPages)
+                          return page;
+                        return null;
+                      },
+                    )
+                      .filter(Boolean)
+                      .map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => fetchProducts(page as number, search)}
+                          className={`px-3 py-1 rounded text-body-sm transition-colors ${pagination.page === page
+                              ? "bg-[#1b1b1b] text-white"
+                              : "border border-surface-container-highest hover:bg-surface-container-low"
+                            }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                  </div>
+                  {/* Mobile page indicator */}
+                  <div className="flex xs:hidden items-center px-3 text-body-sm font-medium">
+                    {pagination.page} / {pagination.totalPages}
+                  </div>
                   <button
                     onClick={() => fetchProducts(pagination.page + 1, search)}
                     disabled={pagination.page === pagination.totalPages}
                     className="px-3 py-1 border border-surface-container-highest rounded text-body-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low transition-colors"
                   >
-                    Next →
+                    <span className="hidden xs:inline">Next</span> →
                   </button>
                 </div>
               </div>

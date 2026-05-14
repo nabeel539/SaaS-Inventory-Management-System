@@ -338,17 +338,17 @@ const EditProductPage = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Link
               to="/products"
-              className="px-6 py-2.5 border border-surface-container-highest rounded-lg text-body font-medium hover:bg-surface-container-low transition-colors"
+              className="px-6 py-2.5 border border-surface-container-highest rounded-lg text-body font-medium hover:bg-surface-container-low transition-colors text-center"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 bg-[#1b1b1b] text-white rounded-lg text-body font-medium hover:bg-[#000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2.5 bg-[#1b1b1b] text-white rounded-lg text-body font-medium hover:bg-[#000] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-1"
             >
               {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
